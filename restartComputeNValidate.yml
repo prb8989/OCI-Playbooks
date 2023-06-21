@@ -1,0 +1,31 @@
+---
+- name: Restart OCI Compute Resource
+  hosts: adminserver
+  remote_user: opc
+
+  tasks:
+  - name: Restart the server
+    shell: oci compute instance action --instance-id ocid1.instance.oc1.iad.anuwcljtgqpzsnqcljjcnpjtrb3g26b2mltrh72ljej2en4lb3gnoa2brk5a --action SOFTRESET
+    register: rebootoutput
+#  - name: Print
+#    debug:
+#          var: rebootoutput
+  - name: Wait for reboot completion
+    ansible.builtin.pause:
+      seconds: 120
+  - name: Check reboot status
+    shell: oci compute instance get --instance-id ocid1.instance.oc1.iad.anuwcljtgqpzsnqcljjcnpjtrb3g26b2mltrh72ljej2en4lb3gnoa2brk5a
+    register: statusoutput
+
+#  - name: Print
+#    debug:
+#          var: statusoutput
+  - name: Regex search
+    set_fact: 
+      searchRes: "{{statusoutput.stdout | regex_search('.+lifecycle-state\\W+([A-Z]+).+', '\\1')| first}}"
+    failed_when: '"RUNNING" not in searchRes'
+#  - name: Print
+#    debug:
+#          var: searchRes
+
+

@@ -1,0 +1,12 @@
+---
+- name: Restart OCI Compute Resource
+  hosts: adminserver
+  remote_user: opc
+
+  tasks:
+  - name: Restart the server
+    shell: oci compute instance action --instance-id ocid1.instance.oc1.iad.anuwcljtgqpzsnqcljjcnpjtrb3g26b2mltrh72ljej2en4lb3gnoa2brk5a --action SOFTRESET
+    register: rebootoutput
+#  - name: Print
+#    debug:
+#          var: rebootoutput

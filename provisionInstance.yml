@@ -1,0 +1,43 @@
+---
+- name: Restart OCI Compute Resource
+  hosts: adminserver
+  remote_user: opc
+
+  tasks:
+  - name: Init Terraform
+    shell: terraform init
+    args:
+      chdir: /home/opc/tf-compute
+    register: tInit
+    failed_when: "tInit.failed==true or 'Terraform has been successfully initialized' not in tInit.stdout"
+
+
+  - name: Plan Terraform
+    shell: echo "Oracle Linux" | terraform plan
+
+    args:
+      chdir: /home/opc/tf-compute
+    register: planOut
+    failed_when: "planOut.failed==true or 'known after apply' not in planOut.stdout"
+
+  - name: Print
+    debug:
+         var: planOut.stdout
+
+  - name: Apply Terraform
+    expect:
+    args:
+      command: terraform apply
+      echo: true
+      chdir: /home/opc/tf-compute
+      timeout: 300
+      responses:
+        (.*)Enter a value(.*):
+          - "Oracle Linux"
+          - "yes"
+    register: applyOut
+    failed_when: "applyOut.failed==true or 'Apply complete' not in applyOut.stdout"
+
+  - name: Print
+    debug:
+         var: applyOut.stdout
